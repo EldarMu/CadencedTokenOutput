@@ -531,7 +531,7 @@ const CADENCE_PROFILES = [
         delay += 55; // Lexical access pause on deep conceptual word
       } else {
         // Fast burst through connective / short words
-        delay += Math.floor(16 + Math.random() * 8);
+        delay += 20;
       }
       return delay;
     }
@@ -549,13 +549,13 @@ const CADENCE_PROFILES = [
 
       if (isPunctuation) {
         delay += 14;
-        ctx.pendingPauseMs = 260 + Math.floor(Math.random() * 90);
+        ctx.pendingPauseMs = 280;
       } else if (isShort) {
         delay += 14; // Quick latching
       } else {
-        delay += 24 + Math.floor(Math.random() * 20);
-        if (Math.random() < 0.1) {
-          delay += 110; // Brief natural human hesitation
+        delay += 32;
+        if ((ctx.tokenIndex % 8) === 3) {
+          delay += 80; // Brief natural cadence hesitation
         }
       }
       return delay;
@@ -609,7 +609,7 @@ const CADENCE_PROFILES = [
           ctx.burstModeRemaining = 5;
           delay += 20;
         } else {
-          delay += 65 + Math.floor(Math.random() * 20);
+          delay += 75;
         }
       }
       return delay;
@@ -1195,17 +1195,15 @@ class CadenceApp {
   }
 
   tickAll(now) {
-    let allFinished = true;
     this.streams.forEach(stream => {
       stream.tick(now);
-      if (!stream.isFinished && stream.isRunning) {
-        allFinished = false;
-      }
     });
 
-    if (this.isGlobalPlaying && allFinished) {
+    const allDone = this.streams.length > 0 && this.streams.every(s => s.isFinished && s.currentIndex >= s.tokens.length);
+    if (this.isGlobalPlaying && allDone) {
       this.isGlobalPlaying = false;
       this.globalStatus.textContent = 'All cadences complete';
+      console.log('ALL_CADENCES_COMPLETE');
     }
   }
 
