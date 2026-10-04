@@ -4,7 +4,7 @@
 
 > This is an experiment to see if low tokens per second can be made perceptually more pleasant.
 >
->  This approach requires is implemented entirely in the front-end presentation layer, no backend infra needs to be touched.
+>  This approach is implemented entirely in the front-end presentation layer, no backend infra needs to be touched.
 
 ---
 
