@@ -1,0 +1,28 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs and scratch files
+*.log
+*.tmp
+record_loop.py
+test_cadence.py
+*.mp4
+
+# Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE and Editor Directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Virtual Environments
+venv/
+.venv/
+env/

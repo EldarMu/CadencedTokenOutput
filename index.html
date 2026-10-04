@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Cadenced Token Output</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #121215;
+      --card-border: #222227;
+      --text-main: #f4f4f5;
+      --text-muted: #828290;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.55);
+      --punch-glow: rgba(244, 63, 94, 0.85);
+      --punch-text: #fda4af;
+      --telemetry-bg: #18181c;
+      --border-subtle: #27272a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 6px 14px;
+      line-height: 1.4;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    /* Top Input Section */
+    .header-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 0.96rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .header-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .presets-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .preset-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      margin-right: 2px;
+    }
+
+    .btn-preset {
+      background-color: #1e1e24;
+      border: 1px solid var(--card-border);
+      color: #d1d1d6;
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-preset:hover {
+      background-color: #272730;
+      border-color: #3b3b45;
+      color: #fff;
+    }
+
+    .btn-preset.active {
+      background-color: #2e2e3a;
+      border-color: var(--accent);
+      color: #a5b4fc;
+    }
+
+    textarea#inputText {
+      width: 100%;
+      height: 38px;
+      background-color: #0c0c0e;
+      border: 1px solid var(--card-border);
+      border-radius: 5px;
+      padding: 4px 8px;
+      color: #e4e4e7;
+      font-size: 0.80rem;
+      font-family: inherit;
+      resize: vertical;
+      line-height: 1.35;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    textarea#inputText:focus {
+      border-color: var(--accent);
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #4f46e5;
+    }
+
+    .btn-secondary {
+      background-color: #1e1e24;
+      border: 1px solid var(--card-border);
+      color: #d1d1d6;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: #272730;
+      color: #fff;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .rate-buttons, .speed-buttons {
+      display: flex;
+      border: 1px solid var(--card-border);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .btn-rate, .btn-speed {
+      background-color: #16161a;
+      border: none;
+      color: #a1a1aa;
+      padding: 3px 8px;
+      font-size: 0.74rem;
+      cursor: pointer;
+      border-right: 1px solid var(--card-border);
+      transition: all 0.12s ease;
+    }
+
+    .btn-rate:last-child, .btn-speed:last-child {
+      border-right: none;
+    }
+
+    .btn-rate.active, .btn-speed.active {
+      background-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Streams Layout */
+    .baseline-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cadences-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 100%;
+    }
+
+    /* Stream Card */
+    .stream-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .stream-card.highlight {
+      border-color: #3b3b4d;
+    }
+
+    .stream-card-header {
+      padding: 4px 10px;
+      min-height: 27px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--telemetry-bg);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .stream-card-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #f4f4f5;
+    }
+
+    .stream-status {
+      font-size: 0.70rem;
+      color: var(--text-muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* Single-line Header Telemetry */
+    .header-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+
+    .metric-item {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+      font-size: 0.68rem;
+    }
+
+    .metric-value {
+      color: #f4f4f5;
+      font-weight: 600;
+      min-width: 44px;
+      font-size: 0.72rem;
+    }
+
+    .metric-value.highlight {
+      color: #818cf8;
+    }
+
+    .instant-gauge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .gauge-bar-track {
+      width: 42px;
+      height: 4px;
+      background-color: #27272a;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .gauge-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+      border-radius: 2px;
+      transition: width 0.08s ease;
+    }
+
+    /* Limited Height Text Box with Smooth Auto-Scroll */
+    .stream-box-container {
+      height: 48px;
+      padding: 4px 10px;
+      overflow-y: hidden;
+      position: relative;
+      background-color: #0c0c0e;
+      cursor: text;
+    }
+
+    .stream-content {
+      font-size: 0.83rem;
+      line-height: 1.42;
+      color: #d4d4d8;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Word & Token Rendering */
+    .token {
+      display: inline;
+    }
+
+    /* Blinking Cursor */
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.15em;
+      background-color: #a5b4fc;
+      margin-left: 2px;
+      vertical-align: -0.18em;
+      animation: cursorBlink 0.9s infinite;
+      box-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    .cursor.hidden {
+      display: none;
+    }
+
+    .cursor.finished {
+      opacity: 0.35;
+      animation: none;
+    }
+
+    @keyframes cursorBlink {
+      0%, 45% { opacity: 1; }
+      50%, 95% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 6px;
+      }
+      .stream-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Top Input & Controls -->
+  <header class="header-card">
+    <div class="header-title-row">
+      <div>
+        <h1>Cadenced Token Output</h1>
+        <p class="header-desc">Simultaneous text emission comparing constant mechanical output with expressive cadences. Zero backend serving changes required—handled entirely in the frontend presentation layer.</p>
+      </div>
+      <div class="speed-control">
+        <span>Target Rate</span>
+        <div class="rate-buttons">
+          <button class="btn-rate" data-rate="2">2 TPS</button>
+          <button class="btn-rate active" data-rate="4">4 TPS</button>
+          <button class="btn-rate" data-rate="6">6 TPS</button>
+          <button class="btn-rate" data-rate="8">8 TPS</button>
+          <button class="btn-rate" data-rate="12">12 TPS</button>
+          <button class="btn-rate" data-rate="free">Dynamic</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div class="presets-row">
+      <span class="preset-label">Presets:</span>
+      <button class="btn-preset active" data-preset="thesis">Core Thesis</button>
+      <button class="btn-preset" data-preset="philosophical">Philosophical</button>
+      <button class="btn-preset" data-preset="conversational">Conversational</button>
+      <button class="btn-preset" data-preset="suspense">Suspense Story</button>
+      <button class="btn-preset" data-preset="syncopated">Syncopated Rhythm</button>
+    </div>
+
+    <!-- Input Textarea -->
+    <textarea id="inputText" placeholder="Type or paste any text to stream..."></textarea>
+
+    <!-- Controls -->
+    <div class="controls-row">
+      <div class="btn-group">
+        <button id="btnPlay" class="btn-primary">▶ Stream All</button>
+        <button id="btnPause" class="btn-secondary">⏸ Pause</button>
+        <button id="btnReset" class="btn-secondary">↺ Reset</button>
+      </div>
+      <div id="globalStatus" class="stream-status">Ready · 0 tokens</div>
+    </div>
+  </header>
+
+  <!-- Baseline Stream (Constant Flat Emission) -->
+  <section class="baseline-section">
+    <div class="stream-card highlight" id="card-baseline">
+      <div class="stream-card-header">
+        <div class="header-left">
+          <span class="stream-card-title">Baseline (Constant)</span>
+          <span class="stream-status" id="status-baseline">Idle</span>
+        </div>
+        <div class="header-telemetry">
+          <div class="metric-item">
+            <span class="metric-label">3s Avg:</span>
+            <span class="metric-value highlight" id="m3s-baseline">0.0 tps</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">30s Avg:</span>
+            <span class="metric-value" id="m30s-baseline">0 tps</span>
+          </div>
+          <div class="instant-gauge">
+            <span class="metric-label">Now:</span>
+            <span class="metric-value" id="minst-baseline" style="min-width:40px;">0 tps</span>
+            <div class="gauge-bar-track">
+              <div class="gauge-bar-fill" id="bar-baseline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stream-box-container" id="scroll-baseline">
+        <div class="stream-content" id="content-baseline"><span class="cursor" id="cursor-baseline"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cadences Grid -->
+  <main class="cadences-grid" id="cadencesGrid">
+    <!-- Stream Cards will be generated or bound dynamically -->
+  </main>
+
+</div>
+
+<script>
+/**
+ * TEXT PRESETS
+ */
+const PRESETS = {
+  thesis: `Can we make low tokens per second feel good for the user? Yes, with cadenced output, which for some strange, unexplicable reason, feels like it travels across the screen faster, though each ends at the same time.`,
+
+  philosophical: `The illusion of constant velocity has corrupted how machines speak to minds. In genuine thought, silence is not wasted empty space; it is the vital scaffold upon which understanding crystallizes. We do not process truth through an unbroken, mechanical conveyer of syllables. We grasp it in sudden lightning bursts of insight, followed by deep, quiet integration. Watch how cadence breathes life into text, letting the essential words strike with weight, while connective tissue glides past effortlessly.`,
+  
+  oratorical: `We stand today at a profound crossroads of human expression. Let there be no doubt: the rhythm of our words carries far greater power than mere vocabulary alone. When a speaker gathers breath, when the pause stretches tight, the listener leans forward in anticipation. And when the strike lands—deliberate, resonant, undeniable—it echoes with absolute conviction. We shall not rush blindly, nor shall we falter into monotonous drone!`,
+  
+  conversational: `You know, I was actually thinking about this just yesterday. When people talk in real life, nobody speaks like a teleprompter, right? We kind of speed through the obvious parts—you know what I mean—and then... well, we pause when we're searching for the right phrase. It's totally elastic! And honestly, when an AI answers you with that exact same natural groove, it feels like an actual conversation instead of a server dumping data.`,
+  
+  suspense: `The corridor stretched into pitch darkness. Not a sound. Then—three measured knocks against the iron door. He held his breath, fingers tightening around the cold brass key. One second passed. Two seconds. The lock snapped open with a sudden, violent crack. Something moved inside the shadow.`,
+  
+  syncopated: `Drop the needle on the groove. Listen to the metric bounce, locking syllables right into the pocket. One, two, quick three-punch combination, then hold back on the downbeat. The syncopation hits your ear like a clean bassline: crisp, tight, strictly rhythmic, and impossible to ignore.`
+};
+
+/**
+ * CADENCE DEFINITIONS
+ * Defines how each style calculates the inter-token delay (ms) and punch weight.
+ */
+const CADENCE_PROFILES = [
+  {
+    id: 'contemplative',
+    name: 'The Contemplative Philosopher',
+    computeDelay: (token, ctx) => {
+      // 1. Take any pending pause from preceding punctuation BEFORE the new word
+      let delay = ctx.pendingPauseMs || 0;
+      ctx.pendingPauseMs = 0;
+
+      const text = token.text;
+      const isPeriod = /[.!?]$/.test(text);
+      const isClause = /[,;:\-]/.test(text);
+      const isLong = text.trim().length > 7;
+
+      if (isPeriod) {
+        // Punctuation itself emits quickly and attaches immediately
+        delay += 14;
+        // The contemplative pause is taken BEFORE the next word starts
+        ctx.pendingPauseMs = 580;
+      } else if (isClause) {
+        delay += 14;
+        ctx.pendingPauseMs = 300;
+      } else if (isLong) {
+        delay += 55; // Lexical access pause on deep conceptual word
+      } else {
+        // Fast burst through connective / short words
+        delay += Math.floor(16 + Math.random() * 8);
+      }
+      return delay;
+    }
+  },
+  {
+    id: 'conversational',
+    name: 'The Conversationalist',
+    computeDelay: (token, ctx) => {
+      let delay = ctx.pendingPauseMs || 0;
+      ctx.pendingPauseMs = 0;
+
+      const text = token.text;
+      const isShort = text.trim().length <= 3;
+      const isPunctuation = /[.,!?;:\-]/.test(text);
+
+      if (isPunctuation) {
+        delay += 14;
+        ctx.pendingPauseMs = 260 + Math.floor(Math.random() * 90);
+      } else if (isShort) {
+        delay += 14; // Quick latching
+      } else {
+        delay += 24 + Math.floor(Math.random() * 20);
+        if (Math.random() < 0.1) {
+          delay += 110; // Brief natural human hesitation
+        }
+      }
+      return delay;
+    }
+  },
+  {
+    id: 'syncopated',
+    name: 'The Syncopated Flow',
+    computeDelay: (token, ctx) => {
+      let delay = ctx.pendingPauseMs || 0;
+      ctx.pendingPauseMs = 0;
+
+      if (/[.!?]/.test(token.text)) {
+        delay += 14;
+        ctx.pendingPauseMs = 320;
+        return delay;
+      }
+
+      const beat = (ctx.tokenIndex % 4);
+      if (beat === 3) {
+        delay += 120; // Syncopated bar hold
+      } else {
+        delay += 18;  // Fast 16th-note pocket
+      }
+      return delay;
+    }
+  },
+  {
+    id: 'suspense',
+    name: 'The Suspenseful Storyteller',
+    computeDelay: (token, ctx) => {
+      let delay = ctx.pendingPauseMs || 0;
+      ctx.pendingPauseMs = 0;
+
+      const text = token.text;
+      if (/[.!?]/.test(text)) {
+        delay += 14;
+        ctx.pendingPauseMs = 750; // Deep suspenseful silence between sentences
+        return delay;
+      } else if (/[,\-]/.test(text)) {
+        delay += 14;
+        ctx.pendingPauseMs = 380;
+        return delay;
+      }
+
+      if (ctx.burstModeRemaining > 0) {
+        delay += 16;
+        ctx.burstModeRemaining--;
+      } else {
+        if (/(sudden|crack|darkness|moved|snapped|breath)/i.test(text)) {
+          ctx.burstModeRemaining = 5;
+          delay += 20;
+        } else {
+          delay += 65 + Math.floor(Math.random() * 20);
+        }
+      }
+      return delay;
+    }
+  }
+];
+
+/**
+ * TOKENIZER
+ * Breaks raw text into realistic subword/word tokens preserving whitespace and punctuation.
+ */
+function tokenizeText(text) {
+  if (!text) return [];
+  // Match tokens: whitespace + word, or punctuation, or remaining chunks
+  const regex = /(\s+[\w’']+|[\w’']+|[.,!?;:\-—"()]+|\n+)/g;
+  const matches = text.match(regex) || [];
+  return matches.map((t, idx) => ({
+    id: idx,
+    text: t,
+    isPunctuation: /[.,!?;:\-—]/.test(t)
+  }));
+}
+
+/**
+ * STREAM RUNNER CLASS
+ * Handles high-resolution timing, token emission, smooth auto-scroll,
+ * and 3s / 30s rolling average telemetry.
+ */
+class StreamInstance {
+  constructor(config, elements) {
+    this.id = config.id;
+    this.name = config.name;
+    this.isBaseline = !!config.isBaseline;
+    this.computeDelayFn = config.computeDelay;
+    
+    // DOM Elements
+    this.els = elements;
+    
+    // State
+    this.tokens = [];
+    this.currentIndex = 0;
+    this.isRunning = false;
+    this.isPaused = false;
+    this.isFinished = false;
+    
+    // High-res timing
+    this.nextEmitTime = 0;
+    this.timestamps = []; // Array of emit performance.now() timestamps
+    this.startTime = 0;
+    this.pauseStartTime = 0;
+    this.totalPausedDuration = 0;
+    
+    // Internal cadence context
+    this.ctx = {
+      tokenIndex: 0,
+      wordsSincePause: 0,
+      burstModeRemaining: 0
+    };
+  }
+
+  loadTokens(tokens, targetTPS) {
+    this.tokens = tokens;
+    this.reset();
+    this.calibrate(targetTPS);
+  }
+
+  reset() {
+    this.currentIndex = 0;
+    this.isRunning = false;
+    this.isPaused = false;
+    this.isFinished = false;
+    this.isTelemetryLocked = false;
+    this.nextEmitTime = 0;
+    this.timestamps = [];
+    this.startTime = 0;
+    this.pauseStartTime = 0;
+    this.totalPausedDuration = 0;
+    this.ctx = {
+      tokenIndex: 0,
+      wordsSincePause: 0,
+      burstModeRemaining: 0,
+      pendingPauseMs: 0
+    };
+
+    // Reset DOM
+    this.els.content.innerHTML = '';
+    this.els.content.appendChild(this.els.cursor);
+    this.els.cursor.classList.remove('hidden');
+    this.els.cursor.classList.remove('finished');
+    this.els.scrollBox.scrollTop = 0;
+    this.els.status.textContent = 'Ready';
+    
+    this.updateTelemetry(0, 0, 0);
+  }
+
+  calibrate(targetTPS) {
+    this.targetTPS = targetTPS;
+    if (!this.tokens || this.tokens.length === 0) return;
+
+    if (this.isBaseline) {
+      if (typeof targetTPS === 'number') {
+        this.baselineTokenDelay = 1000 / targetTPS;
+      } else {
+        this.baselineTokenDelay = 28.5; // Dynamic (~35 tps)
+      }
+      this.rateScale = 1.0;
+      return;
+    }
+
+    if (typeof targetTPS === 'number' && this.computeDelayFn) {
+      // Simulate delays across tokens to calculate total raw time
+      const simCtx = { tokenIndex: 0, wordsSincePause: 0, burstModeRemaining: 0, pendingPauseMs: 0 };
+      let rawTotalMs = 0;
+      for (let i = 0; i < this.tokens.length; i++) {
+        const d = this.computeDelayFn(this.tokens[i], simCtx);
+        simCtx.tokenIndex++;
+        if (this.tokens[i].isPunctuation) {
+          simCtx.wordsSincePause = 0;
+        } else {
+          simCtx.wordsSincePause++;
+        }
+        rawTotalMs += d;
+      }
+      // Target total duration = (tokens.length / targetTPS) * 1000 ms
+      const targetTotalMs = (this.tokens.length / targetTPS) * 1000;
+      this.rateScale = targetTotalMs / Math.max(1, rawTotalMs);
+    } else {
+      this.rateScale = 1.0;
+    }
+  }
+
+  start(now, targetTPS) {
+    this.reset();
+    this.isRunning = true;
+    this.startTime = now;
+    this.calibrate(targetTPS);
+    this.scheduleNext(now);
+    this.els.status.textContent = 'Streaming...';
+  }
+
+  pause(now) {
+    if (!this.isRunning || this.isPaused || this.isFinished) return;
+    this.isPaused = true;
+    this.pauseStartTime = now;
+    this.els.status.textContent = 'Paused';
+  }
+
+  resume(now) {
+    if (!this.isRunning || !this.isPaused || this.isFinished) return;
+    this.isPaused = false;
+    const pausedDelta = now - this.pauseStartTime;
+    this.totalPausedDuration += pausedDelta;
+    this.nextEmitTime += pausedDelta;
+    for (let i = 0; i < this.timestamps.length; i++) {
+      this.timestamps[i] += pausedDelta;
+    }
+    this.els.status.textContent = 'Streaming...';
+  }
+
+  scheduleNext(now) {
+    if (this.currentIndex >= this.tokens.length) {
+      this.isFinished = true;
+      this.isRunning = false;
+      this.els.cursor.classList.add('finished');
+      this.els.status.textContent = `Completed (${this.tokens.length} tokens)`;
+      
+      // Calculate and permanently lock final telemetry
+      this.computeFinalTelemetry(now);
+      this.isTelemetryLocked = true;
+      return;
+    }
+
+    const token = this.tokens[this.currentIndex];
+    let delay = 28.5;
+
+    if (this.isBaseline) {
+      delay = this.baselineTokenDelay || 250;
+    } else if (this.computeDelayFn) {
+      delay = this.computeDelayFn(token, this.ctx);
+      if (this.rateScale) {
+        delay = delay * this.rateScale;
+      }
+    }
+
+    this.nextEmitTime = now + Math.max(4, delay);
+  }
+
+  tick(now) {
+    // Once finished or locked, telemetry and emission are completely frozen
+    if (this.isFinished || this.isTelemetryLocked) {
+      return;
+    }
+
+    // While paused or idle, do not decay telemetry with advancing time
+    if (!this.isRunning || this.isPaused) {
+      return;
+    }
+
+    // Emit tokens that are due
+    while (now >= this.nextEmitTime && this.isRunning && !this.isFinished) {
+      this.emitToken(now);
+      this.scheduleNext(now);
+    }
+
+    if (!this.isFinished && !this.isTelemetryLocked) {
+      this.computeTelemetry(now);
+      this.performSmoothScroll();
+    }
+  }
+
+  emitToken(now) {
+    const token = this.tokens[this.currentIndex];
+    this.timestamps.push(now);
+
+    // Create DOM element for the token - clean, instant, no lingering highlighter lag
+    const span = document.createElement('span');
+    span.className = 'token';
+    span.textContent = token.text;
+
+    // Insert before cursor
+    this.els.content.insertBefore(span, this.els.cursor);
+
+    // Update context
+    this.ctx.tokenIndex++;
+    if (token.isPunctuation) {
+      this.ctx.wordsSincePause = 0;
+    } else {
+      this.ctx.wordsSincePause++;
+    }
+
+    this.currentIndex++;
+  }
+
+  /**
+   * BULLETPROOF SMOOTH AUTO-SCROLL
+   * Uses viewport-relative bounding rects to anchor the active line
+   * smoothly in the compact reading window without jarring jumps.
+   */
+  performSmoothScroll() {
+    const scrollBox = this.els.scrollBox;
+    const cursor = this.els.cursor;
+    if (!cursor) return;
+
+    const cursorRect = cursor.getBoundingClientRect();
+    const boxRect = scrollBox.getBoundingClientRect();
+    
+    // Position of cursor relative to content scroll
+    const relativeCursorY = cursorRect.top - boxRect.top + scrollBox.scrollTop;
+    
+    // Desired anchor: 35% down the compact window height
+    const targetScrollTop = Math.max(0, relativeCursorY - (scrollBox.clientHeight * 0.35));
+    const currentScrollTop = scrollBox.scrollTop;
+    
+    const diff = targetScrollTop - currentScrollTop;
+    if (Math.abs(diff) > 0.4) {
+      // Gentle exponential ease for smooth eye-tracking
+      scrollBox.scrollTop = currentScrollTop + (diff * 0.18);
+    }
+  }
+
+  /**
+   * FINAL TELEMETRY LOCK
+   * Permanently snapshots the final achieved 3s and 30s averages upon completion.
+   */
+  computeFinalTelemetry(now) {
+    if (this.timestamps.length === 0) {
+      this.updateTelemetry(0, 0, 0);
+      return;
+    }
+
+    const tStart = this.startTime;
+    const activeElapsed = Math.max(0.1, (now - tStart - this.totalPausedDuration) / 1000);
+
+    // 1. Final 3-second average
+    const window3sStart = now - 3000;
+    let count3s = 0;
+    for (let i = this.timestamps.length - 1; i >= 0; i--) {
+      if (this.timestamps[i] >= window3sStart) count3s++;
+      else break;
+    }
+    const duration3s = Math.min(3.0, activeElapsed);
+    const final3s = duration3s > 0 ? (count3s / duration3s) : 0;
+
+    // 2. Final 30-second average (or total run average if < 30s)
+    const window30sStart = now - 30000;
+    let count30s = 0;
+    for (let i = this.timestamps.length - 1; i >= 0; i--) {
+      if (this.timestamps[i] >= window30sStart) count30s++;
+      else break;
+    }
+    const duration30s = Math.min(30.0, activeElapsed);
+    const final30s = duration30s > 0 ? (count30s / duration30s) : 0;
+
+    this.els.m3s.textContent = `${final3s.toFixed(1)} tps`;
+    this.els.m30s.textContent = `${Math.round(final30s)} tps`;
+    this.els.mInst.textContent = '0 tps';
+    this.els.bar.style.width = '0%';
+  }
+
+  /**
+   * ROLLING TELEMETRY CALCULATION
+   * Computes precise 3-second and 30-second rolling token-per-second averages.
+   */
+  computeTelemetry(now) {
+    if (this.isTelemetryLocked || this.isFinished) {
+      return;
+    }
+
+    if (this.timestamps.length === 0) {
+      this.updateTelemetry(0, 0, 0);
+      return;
+    }
+
+    // Purge timestamps older than 32 seconds to keep memory minimal
+    const cutoff32s = now - 32000;
+    while (this.timestamps.length > 0 && this.timestamps[0] < cutoff32s) {
+      this.timestamps.shift();
+    }
+
+    const tStart = this.startTime;
+    const activeElapsed = Math.max(0.1, (now - tStart - this.totalPausedDuration) / 1000);
+
+    // 1. Rolling 3-second average
+    const window3sStart = now - 3000;
+    let count3s = 0;
+    for (let i = this.timestamps.length - 1; i >= 0; i--) {
+      if (this.timestamps[i] >= window3sStart) {
+        count3s++;
+      } else {
+        break;
+      }
+    }
+    const duration3s = Math.min(3.0, activeElapsed);
+    const avg3s = duration3s > 0 ? (count3s / duration3s) : 0;
+
+    // 2. Rolling 30-second average
+    const window30sStart = now - 30000;
+    let count30s = 0;
+    for (let i = this.timestamps.length - 1; i >= 0; i--) {
+      if (this.timestamps[i] >= window30sStart) {
+        count30s++;
+      } else {
+        break;
+      }
+    }
+    const duration30s = Math.min(30.0, activeElapsed);
+    const avg30s = duration30s > 0 ? (count30s / duration30s) : 0;
+
+    // 3. Instantaneous (500ms window)
+    const window500msStart = now - 500;
+    let count500ms = 0;
+    for (let i = this.timestamps.length - 1; i >= 0; i--) {
+      if (this.timestamps[i] >= window500msStart) {
+        count500ms++;
+      } else {
+        break;
+      }
+    }
+    const duration500ms = Math.min(0.5, activeElapsed);
+    const instantTps = duration500ms > 0 ? (count500ms / duration500ms) : 0;
+
+    this.updateTelemetry(avg3s, avg30s, instantTps);
+  }
+
+  updateTelemetry(avg3s, avg30s, instant) {
+    if (this.isTelemetryLocked) {
+      return;
+    }
+    this.els.m3s.textContent = `${avg3s.toFixed(1)} tps`;
+    this.els.m30s.textContent = `${Math.round(avg30s)} tps`;
+    this.els.mInst.textContent = `${Math.round(instant)} tps`;
+    
+    // Scale bar up to 75 TPS
+    const barPct = Math.min(100, (instant / 75) * 100);
+    this.els.bar.style.width = `${barPct}%`;
+  }
+}
+
+/**
+ * MAIN APP CONTROLLER
+ */
+class CadenceApp {
+  constructor() {
+    this.streams = [];
+    this.targetTPS = 4; // Standardized around 4 TPS by default!
+    this.isGlobalPlaying = false;
+    this.isGlobalPaused = false;
+    
+    this.initDOM();
+    this.initStreams();
+    this.bindEvents();
+    this.loadPreset('thesis');
+    
+    // Start animation loops: rAF for smooth visual refresh, interval for background/headless stability
+    requestAnimationFrame(this.renderLoop.bind(this));
+    setInterval(() => this.tickAll(performance.now()), 20);
+  }
+
+  initDOM() {
+    this.inputText = document.getElementById('inputText');
+    this.btnPlay = document.getElementById('btnPlay');
+    this.btnPause = document.getElementById('btnPause');
+    this.btnReset = document.getElementById('btnReset');
+    this.globalStatus = document.getElementById('globalStatus');
+    this.cadencesGrid = document.getElementById('cadencesGrid');
+    this.presetButtons = document.querySelectorAll('.btn-preset');
+    this.rateButtons = document.querySelectorAll('.btn-rate');
+  }
+
+  initStreams() {
+    // 1. Setup Baseline Stream
+    const baselineInstance = new StreamInstance(
+      { id: 'baseline', name: 'Baseline (Constant)', isBaseline: true },
+      {
+        card: document.getElementById('card-baseline'),
+        status: document.getElementById('status-baseline'),
+        scrollBox: document.getElementById('scroll-baseline'),
+        content: document.getElementById('content-baseline'),
+        cursor: document.getElementById('cursor-baseline'),
+        m3s: document.getElementById('m3s-baseline'),
+        m30s: document.getElementById('m30s-baseline'),
+        mInst: document.getElementById('minst-baseline'),
+        bar: document.getElementById('bar-baseline')
+      }
+    );
+    this.streams.push(baselineInstance);
+
+    // 2. Setup Cadence Grid Streams (Single-line Header: Name, Status, and Telemetry)
+    CADENCE_PROFILES.forEach(profile => {
+      const card = document.createElement('div');
+      card.className = 'stream-card';
+      card.id = `card-${profile.id}`;
+
+      card.innerHTML = `
+        <div class="stream-card-header">
+          <div class="header-left">
+            <span class="stream-card-title">${profile.name}</span>
+            <span class="stream-status" id="status-${profile.id}">Idle</span>
+          </div>
+          <div class="header-telemetry">
+            <div class="metric-item">
+              <span class="metric-label">3s Avg:</span>
+              <span class="metric-value highlight" id="m3s-${profile.id}">0.0 tps</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">30s Avg:</span>
+              <span class="metric-value" id="m30s-${profile.id}">0 tps</span>
+            </div>
+            <div class="instant-gauge">
+              <span class="metric-label">Now:</span>
+              <span class="metric-value" id="minst-${profile.id}" style="min-width:40px;">0 tps</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill" id="bar-${profile.id}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stream-box-container" id="scroll-${profile.id}">
+          <div class="stream-content" id="content-${profile.id}">
+            <span class="cursor" id="cursor-${profile.id}"></span>
+          </div>
+        </div>
+      `;
+
+      this.cadencesGrid.appendChild(card);
+
+      const instance = new StreamInstance(profile, {
+        card: card,
+        status: card.querySelector(`#status-${profile.id}`),
+        scrollBox: card.querySelector(`#scroll-${profile.id}`),
+        content: card.querySelector(`#content-${profile.id}`),
+        cursor: card.querySelector(`#cursor-${profile.id}`),
+        m3s: card.querySelector(`#m3s-${profile.id}`),
+        m30s: card.querySelector(`#m30s-${profile.id}`),
+        mInst: card.querySelector(`#minst-${profile.id}`),
+        bar: card.querySelector(`#bar-${profile.id}`)
+      });
+
+      this.streams.push(instance);
+    });
+  }
+
+  bindEvents() {
+    this.btnPlay.addEventListener('click', () => this.handlePlay());
+    this.btnPause.addEventListener('click', () => this.handlePauseToggle());
+    this.btnReset.addEventListener('click', () => this.handleReset());
+
+    this.inputText.addEventListener('input', () => {
+      this.updateTokensFromInput();
+    });
+
+    this.presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.presetButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.loadPreset(btn.dataset.preset);
+      });
+    });
+
+    this.rateButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.rateButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const rateVal = btn.dataset.rate;
+        this.targetTPS = rateVal === 'free' ? 'free' : parseFloat(rateVal);
+        this.calibrateAllStreams();
+        this.updateGlobalStatus();
+      });
+    });
+  }
+
+  calibrateAllStreams() {
+    this.streams.forEach(s => s.calibrate(this.targetTPS));
+  }
+
+  loadPreset(presetKey) {
+    if (PRESETS[presetKey]) {
+      this.inputText.value = PRESETS[presetKey];
+      this.updateTokensFromInput();
+    }
+  }
+
+  updateGlobalStatus() {
+    const tokens = tokenizeText(this.inputText.value);
+    const rateText = typeof this.targetTPS === 'number' ? `${this.targetTPS} TPS` : 'Dynamic';
+    this.globalStatus.textContent = `Ready · ${tokens.length} tokens · Target: ${rateText}`;
+  }
+
+  updateTokensFromInput() {
+    const text = this.inputText.value;
+    const tokens = tokenizeText(text);
+    this.streams.forEach(s => s.loadTokens(tokens, this.targetTPS));
+    this.updateGlobalStatus();
+    this.isGlobalPlaying = false;
+    this.isGlobalPaused = false;
+    this.btnPause.textContent = '⏸ Pause';
+  }
+
+  handlePlay() {
+    const text = this.inputText.value.trim();
+    if (!text) return;
+
+    const tokens = tokenizeText(text);
+    const now = performance.now();
+    const rateText = typeof this.targetTPS === 'number' ? `${this.targetTPS} TPS` : 'Dynamic';
+    
+    this.streams.forEach(s => {
+      s.loadTokens(tokens, this.targetTPS);
+      s.start(now, this.targetTPS);
+    });
+
+    this.isGlobalPlaying = true;
+    this.isGlobalPaused = false;
+    this.btnPause.textContent = '⏸ Pause';
+    this.globalStatus.textContent = `Streaming (${tokens.length} tokens @ ~${rateText})...`;
+  }
+
+  handlePauseToggle() {
+    if (!this.isGlobalPlaying) return;
+    const now = performance.now();
+
+    if (this.isGlobalPaused) {
+      // Resume
+      this.streams.forEach(s => s.resume(now));
+      this.isGlobalPaused = false;
+      this.btnPause.textContent = '⏸ Pause';
+      this.globalStatus.textContent = 'Streaming...';
+    } else {
+      // Pause
+      this.streams.forEach(s => s.pause(now));
+      this.isGlobalPaused = true;
+      this.btnPause.textContent = '▶ Resume';
+      this.globalStatus.textContent = 'Paused';
+    }
+  }
+
+  handleReset() {
+    this.streams.forEach(s => s.reset());
+    this.isGlobalPlaying = false;
+    this.isGlobalPaused = false;
+    this.btnPause.textContent = '⏸ Pause';
+    this.updateTokensFromInput();
+  }
+
+  tickAll(now) {
+    let allFinished = true;
+    this.streams.forEach(stream => {
+      stream.tick(now);
+      if (!stream.isFinished && stream.isRunning) {
+        allFinished = false;
+      }
+    });
+
+    if (this.isGlobalPlaying && allFinished) {
+      this.isGlobalPlaying = false;
+      this.globalStatus.textContent = 'All cadences complete';
+    }
+  }
+
+  renderLoop() {
+    this.tickAll(performance.now());
+    requestAnimationFrame(this.renderLoop.bind(this));
+  }
+
+  async runSelfTest() {
+    // 1. Test short text streaming to completion and freeze verification
+    this.targetTPS = 12; // Fast for automated test
+    const baseline = this.streams[0];
+    this.inputText.value = "Short quick cadence test.";
+    this.updateTokensFromInput();
+    this.handlePlay();
+    
+    // Wait until baseline finishes
+    let waitLoops = 0;
+    while (!baseline.isFinished && waitLoops < 40) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      waitLoops++;
+    }
+
+    const baselineFinished = baseline.isFinished;
+    const finalIndex = baseline.currentIndex;
+    const frozen3s = baseline.els.m3s.textContent;
+    const frozen30s = baseline.els.m30s.textContent;
+    const is30sInteger = !frozen30s.includes('.');
+
+    // Wait an additional 500ms to ensure values do NOT decay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const postWait3s = baseline.els.m3s.textContent;
+    const postWait30s = baseline.els.m30s.textContent;
+
+    const freezeVerified = baselineFinished && (frozen3s === postWait3s) && (frozen30s === postWait30s);
+
+    // 2. Now run longer test to test all streams active telemetry, pause, resume, reset
+    this.targetTPS = 4;
+    this.loadPreset('philosophical');
+    this.handlePlay();
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const details = [];
+    let allEmitted = true;
+    let allTelemetryActive = true;
+
+    this.streams.forEach(s => {
+      const tokensCount = s.currentIndex;
+      const tps3s = parseFloat(s.els.m3s.textContent);
+      const tps30s = parseInt(s.els.m30s.textContent, 10);
+      if (tokensCount <= 0) allEmitted = false;
+      if (tps3s <= 0 && tps30s <= 0) allTelemetryActive = false;
+      details.push({ id: s.id, name: s.name, tokens: tokensCount, tps3s, tps30s });
+    });
+
+    // Test pause
+    this.handlePauseToggle();
+    const isPaused = this.isGlobalPaused;
+
+    // Test resume
+    this.handlePauseToggle();
+    const isResumed = !this.isGlobalPaused;
+
+    // Test reset
+    this.handleReset();
+    const isReset = this.streams.every(s => s.currentIndex === 0);
+
+    const passed = freezeVerified && is30sInteger && allEmitted && allTelemetryActive && isPaused && isResumed && isReset;
+    const testDiv = document.createElement('div');
+    testDiv.id = 'self-test-results';
+    testDiv.setAttribute('data-status', passed ? 'PASSED' : 'FAILED');
+    testDiv.textContent = JSON.stringify({
+      passed,
+      baselineFinished,
+      finalIndex,
+      freezeVerified,
+      is30sInteger,
+      frozen3s,
+      postWait3s,
+      frozen30s,
+      waitLoops,
+      isPaused,
+      isResumed,
+      isReset
+    });
+    document.body.appendChild(testDiv);
+    return { passed, details };
+  }
+}
+
+// Initialize on DOM load
+window.addEventListener('DOMContentLoaded', () => {
+  window.app = new CadenceApp();
+  if (window.location.search.includes('test=true')) {
+    window.app.runSelfTest();
+  }
+});
+</script>
+
+</body>
+</html>
