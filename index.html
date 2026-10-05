@@ -678,6 +678,8 @@ class StreamInstance {
 
   reset() {
     this.currentIndex = 0;
+    this.burstStartIndex = 0;
+    this.burstEndIndex = 0;
     this.isRunning = false;
     this.isPaused = false;
     this.isFinished = false;
@@ -716,13 +718,31 @@ class StreamInstance {
     }
   }
 
+  getNextBurstEndIndex(startIndex) {
+    let endIndex = startIndex;
+    const maxTokens = (typeof this.targetTPS === 'number' && this.targetTPS <= 2) ? 4 : 8;
+    while (endIndex < this.tokens.length) {
+      const tok = this.tokens[endIndex];
+      endIndex++;
+      // Natural clause boundary at punctuation or breath-group limit
+      if (tok.isPunctuation || (endIndex - startIndex) >= maxTokens) {
+        break;
+      }
+    }
+    return endIndex;
+  }
+
   start(now, targetTPS) {
     this.reset();
     this.isRunning = true;
     this.startTime = now;
     this.calibrate(targetTPS);
     this.scheduleNext(now);
-    this.els.status.textContent = 'Streaming...';
+    if (this.isBaseline) {
+      this.els.status.textContent = 'Streaming...';
+    } else {
+      this.els.status.textContent = 'Buffering...';
+    }
   }
 
   pause(now) {
@@ -757,23 +777,49 @@ class StreamInstance {
       return;
     }
 
-    const token = this.tokens[this.currentIndex];
-    let delay = 28.5;
-
     if (this.isBaseline) {
-      delay = this.baselineTokenDelay || 250;
-    } else if (this.computeDelayFn) {
+      if (this.currentIndex === 0) {
+        this.nextEmitTime = now;
+      } else {
+        const delay = this.baselineTokenDelay || 250;
+        this.nextEmitTime = now + delay;
+      }
+      this.els.status.textContent = 'Streaming...';
+      return;
+    }
+
+    // Cadenced stream: the burst happens when it is ready!
+    if (this.currentIndex >= this.burstEndIndex) {
+      this.burstStartIndex = this.currentIndex;
+      this.burstEndIndex = this.getNextBurstEndIndex(this.currentIndex);
+
+      const lastTokenInBurst = this.burstEndIndex - 1;
+      const arrivalInterval = typeof this.targetTPS === 'number' ? (1000 / this.targetTPS) : 28.5;
+      const burstReadyTime = this.startTime + this.totalPausedDuration + (lastTokenInBurst * arrivalInterval);
+
+      const pendingPause = this.ctx.pendingPauseMs || 0;
+      this.ctx.pendingPauseMs = 0;
+
+      const burstStartTime = Math.max(burstReadyTime, now + pendingPause);
+      this.nextEmitTime = burstStartTime;
+
+      if (now < burstStartTime) {
+        this.els.status.textContent = this.currentIndex === 0 ? 'Buffering...' : 'Pausing...';
+      } else {
+        this.els.status.textContent = 'Streaming...';
+      }
+      return;
+    }
+
+    // Inside active burst: emit using native profile delay!
+    const token = this.tokens[this.currentIndex];
+    let delay = 20;
+    if (this.computeDelayFn) {
       delay = this.computeDelayFn(token, this.ctx);
     }
 
-    // Natural cadence scheduled time
-    const scheduledTime = now + Math.max(4, delay);
-
-    // Causal constraint: A token cannot display before it hypothetically arrives from the server
-    const arrivalInterval = typeof this.targetTPS === 'number' ? (1000 / this.targetTPS) : 28.5;
-    const earliestArrival = this.startTime + this.totalPausedDuration + (this.currentIndex * arrivalInterval);
-
-    this.nextEmitTime = Math.max(scheduledTime, earliestArrival);
+    this.nextEmitTime = now + Math.max(4, delay);
+    this.els.status.textContent = 'Streaming...';
   }
 
   tick(now) {
