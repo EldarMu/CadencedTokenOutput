@@ -673,7 +673,7 @@ class StreamInstance {
   loadTokens(tokens, targetTPS) {
     this.tokens = tokens;
     this.reset();
-    this.calibrate(targetTPS);
+    this.setTargetRate(targetTPS);
   }
 
   reset() {
@@ -707,7 +707,7 @@ class StreamInstance {
     this.updateTelemetry(0, 0, 0);
   }
 
-  calibrate(targetTPS) {
+  setTargetRate(targetTPS) {
     this.targetTPS = targetTPS;
     if (this.isBaseline) {
       if (typeof targetTPS === 'number') {
@@ -736,7 +736,7 @@ class StreamInstance {
     this.reset();
     this.isRunning = true;
     this.startTime = now;
-    this.calibrate(targetTPS);
+    this.setTargetRate(targetTPS);
     this.scheduleNext(now);
     if (this.isBaseline) {
       this.els.status.textContent = 'Streaming...';
@@ -1140,14 +1140,14 @@ class CadenceApp {
         btn.classList.add('active');
         const rateVal = btn.dataset.rate;
         this.targetTPS = rateVal === 'free' ? 'free' : parseFloat(rateVal);
-        this.calibrateAllStreams();
+        this.updateAllStreamsRate();
         this.updateGlobalStatus();
       });
     });
   }
 
-  calibrateAllStreams() {
-    this.streams.forEach(s => s.calibrate(this.targetTPS));
+  updateAllStreamsRate() {
+    this.streams.forEach(s => s.setTargetRate(this.targetTPS));
   }
 
   loadPreset(presetKey) {
