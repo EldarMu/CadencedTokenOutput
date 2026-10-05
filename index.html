@@ -511,7 +511,7 @@ const CADENCE_PROFILES = [
     name: 'The Contemplative Philosopher',
     computeDelay: (token, ctx, T) => {
       const text = token.text;
-      if (/[.!?]$/.test(text)) {
+      if (/[.!?]/.test(text)) {
         return Math.round(2.5 * T); // Contemplative reflection at sentence end (625ms @ 4 TPS)
       }
       if (/[,;:\-—]/.test(text)) {
@@ -531,7 +531,7 @@ const CADENCE_PROFILES = [
     name: 'The Conversationalist',
     computeDelay: (token, ctx, T) => {
       const text = token.text;
-      if (/[.!?]$/.test(text)) {
+      if (/[.!?]/.test(text)) {
         return Math.round(1.8 * T); // Conversational sentence pause (450ms @ 4 TPS)
       }
       if (/[,;:\-—]/.test(text)) {
@@ -552,7 +552,7 @@ const CADENCE_PROFILES = [
     name: 'The Syncopated Flow',
     computeDelay: (token, ctx, T) => {
       const text = token.text;
-      if (/[.!?]$/.test(text)) {
+      if (/[.!?]/.test(text)) {
         return Math.round(1.8 * T); // Musical rest at bar end (450ms @ 4 TPS)
       }
       if (/[,;:\-—]/.test(text)) {
@@ -570,7 +570,7 @@ const CADENCE_PROFILES = [
     name: 'The Suspenseful Storyteller',
     computeDelay: (token, ctx, T) => {
       const text = token.text;
-      if (/[.!?]$/.test(text)) {
+      if (/[.!?]/.test(text)) {
         return Math.round(2.0 * T); // Dramatic silence at sentence end (500ms @ 4 TPS)
       }
       if (/[,:\-—]/.test(text)) {
@@ -597,7 +597,7 @@ function tokenizeText(text) {
   return matches.map((t, idx) => ({
     id: idx,
     text: t,
-    isPunctuation: /[.,!?;:\-—]/.test(t)
+    isPunctuation: /[.,!?;:\-—"()]/.test(t)
   }));
 }
 
@@ -745,8 +745,24 @@ class StreamInstance {
     }
 
     let delay = baseInterval;
-    if (this.computeDelayFn) {
-      delay = this.computeDelayFn(token, this.ctx, baseInterval);
+    if (token.isPunctuation) {
+      // Punctuation attaches immediately to the preceding word rather than waiting before the mark
+      delay = Math.max(10, Math.round(0.08 * baseInterval));
+    } else {
+      // Non-punctuation token: pause occurs AFTER the preceding token.
+      // If preceding token was punctuation, take that punctuation pause (e.g. sentence/clause pause).
+      let evalToken = this.tokens[this.currentIndex - 1];
+      let pIdx = this.currentIndex - 1;
+      while (pIdx >= 0 && this.tokens[pIdx].isPunctuation) {
+        if (/[.!?]/.test(this.tokens[pIdx].text)) {
+          evalToken = this.tokens[pIdx]; // prioritize sentence-ending pause
+          break;
+        }
+        pIdx--;
+      }
+      if (this.computeDelayFn) {
+        delay = this.computeDelayFn(evalToken, this.ctx, baseInterval);
+      }
     }
 
     const scheduledTime = now + Math.max(10, delay);
