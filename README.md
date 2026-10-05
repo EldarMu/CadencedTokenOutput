@@ -14,11 +14,11 @@ All cadences operate under a strict causal arrival floor ($d_i \ge a_i$) against
 
 | Profile | Rhythm & Linguistic Dynamics | Perceptual Character |
 | :--- | :--- | :--- |
-| **Baseline (Constant)** | Flat, metronomic emission. Every token receives identical delay (`1000 / targetTPS` ms). | Robotic conveyor belt; feels slowest to the eye. |
-| **The Contemplative Philosopher** | Punctuation attaches instantly; contemplative pauses occur *before* subsequent clauses (`300ms–580ms`). Lexical access delays on deep words (`>7` characters). Rapid burst through connective syllables. | Deeply thoughtful, cerebral, deliberate. |
-| **The Conversationalist** | Elastic human phrasing with quick latching on short words (`<=3` chars) and stochastic micro-hesitations (`110ms`) mimicking natural spoken speech. | Relaxed, spontaneous, warm, human. |
-| **The Syncopated Flow** | Metric bounce locked into a 4-beat pocket (3 sixteenth notes in the pocket followed by an offbeat bar hold). | Rhythmic, musical, tight, energetic. |
-| **The Suspenseful Storyteller** | Extended breath-holding silences between sentences (`750ms`), dramatic tension across dashes, followed by sudden high-speed narrative bursts. | Gripping, atmospheric, dramatic. |
+| **Baseline (Constant)** | Flat, metronomic emission directly on server arrival (`1000 / targetTPS` ms). | Robotic conveyor belt; feels slowest to the eye. |
+| **The Contemplative Philosopher** | Broad phrase horizon (cap: 10 tokens). Measured stately tempo (`75ms`), lexical deliberation on conceptual words (`125ms`), followed by deep contemplative silences (`700ms` at periods, `380ms` at clauses). | Deeply thoughtful, cerebral, deliberate. |
+| **The Conversationalist** | Short, bite-sized phrasing (cap: 5 tokens). Elastic conversational gliding (`32ms–48ms`) with stochastic mid-sentence thinking hesitations (`+90ms`). | Relaxed, spontaneous, warm, human. |
+| **The Syncopated Flow** | Locked into strict 4-token musical bars. Crisp sixteenth-note pocket (`28ms`) slamming into an offbeat bar hold (`160ms`), with musical rests at periods (`340ms`). | Rhythmic, musical, tight, energetic. |
+| **The Suspenseful Storyteller** | Asymmetric phrasing (cap: 4 tokens). Creeping, cautious drip (`140ms`) exploding into rapid narrative rushes (`28ms`) upon action triggers, broken by breathless cliffhanger silences (`850ms`). | Gripping, atmospheric, dramatic. |
 
 ---
 
