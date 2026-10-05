@@ -509,52 +509,40 @@ const CADENCE_PROFILES = [
   {
     id: 'contemplative',
     name: 'The Contemplative Philosopher',
-    burstCap: 10,
-    computeDelay: (token, ctx) => {
-      let delay = ctx.pendingPauseMs || 0;
-      ctx.pendingPauseMs = 0;
-
+    computeDelay: (token, ctx, T) => {
       const text = token.text;
-      const isPeriod = /[.!?]$/.test(text);
-      const isClause = /[,;:\-—]/.test(text);
-      const isLong = text.trim().length > 7;
-
-      if (isPeriod) {
-        delay += 35;
-        ctx.pendingPauseMs = 700; // Deep contemplative silence
-      } else if (isClause) {
-        delay += 35;
-        ctx.pendingPauseMs = 380; // Clause breath
-      } else if (isLong) {
-        delay += 125; // Thoughtful lexical access on conceptual words
-      } else {
-        delay += 75;  // Measured, stately flow
+      if (/[.!?]$/.test(text)) {
+        return Math.round(2.5 * T); // Contemplative reflection at sentence end (625ms @ 4 TPS)
       }
-      return delay;
+      if (/[,;:\-—]/.test(text)) {
+        return Math.round(1.6 * T); // Clause breath (400ms @ 4 TPS)
+      }
+      if (text.trim().length > 7) {
+        return Math.round(1.3 * T); // Thoughtful weight on multisyllabic words (325ms @ 4 TPS)
+      }
+      if (text.trim().length <= 3) {
+        return Math.round(0.55 * T); // Connective syllable glide (138ms @ 4 TPS)
+      }
+      return Math.round(0.85 * T);   // Stately cadence (212ms @ 4 TPS)
     }
   },
   {
     id: 'conversational',
     name: 'The Conversationalist',
-    burstCap: 5,
-    computeDelay: (token, ctx) => {
-      let delay = ctx.pendingPauseMs || 0;
-      ctx.pendingPauseMs = 0;
-
+    computeDelay: (token, ctx, T) => {
       const text = token.text;
-      const isShort = text.trim().length <= 3;
-      const isPunctuation = /[.,!?;:\-—]/.test(text);
-
-      if (isPunctuation) {
-        delay += 25;
-        ctx.pendingPauseMs = 280; // Natural conversational pause
-      } else if (isShort) {
-        delay += 32; // Quick conversational latching
-      } else {
-        delay += 48;
-        if ((ctx.tokenIndex % 7) === 3) {
-          delay += 90; // Natural thinking hesitation
-        }
+      if (/[.!?]$/.test(text)) {
+        return Math.round(1.8 * T); // Conversational sentence pause (450ms @ 4 TPS)
+      }
+      if (/[,;:\-—]/.test(text)) {
+        return Math.round(1.3 * T); // Casual comma breath (325ms @ 4 TPS)
+      }
+      if (text.trim().length <= 3) {
+        return Math.round(0.45 * T); // Breezy latching on short words (112ms @ 4 TPS)
+      }
+      let delay = Math.round(0.8 * T); // Natural conversational flow (200ms @ 4 TPS)
+      if ((ctx.tokenIndex % 7) === 3) {
+        delay += Math.round(0.35 * T); // Natural subtle thinking hesitation (87ms @ 4 TPS)
       }
       return delay;
     }
@@ -562,57 +550,41 @@ const CADENCE_PROFILES = [
   {
     id: 'syncopated',
     name: 'The Syncopated Flow',
-    burstCap: 4,
-    computeDelay: (token, ctx) => {
-      let delay = ctx.pendingPauseMs || 0;
-      ctx.pendingPauseMs = 0;
-
-      if (/[.!?]/.test(token.text)) {
-        delay += 20;
-        ctx.pendingPauseMs = 340; // Musical rest
-        return delay;
+    computeDelay: (token, ctx, T) => {
+      const text = token.text;
+      if (/[.!?]$/.test(text)) {
+        return Math.round(1.8 * T); // Musical rest at bar end (450ms @ 4 TPS)
       }
-
+      if (/[,;:\-—]/.test(text)) {
+        return Math.round(1.2 * T); // Comma breath (300ms @ 4 TPS)
+      }
       const beat = (ctx.tokenIndex % 4);
       if (beat === 3) {
-        delay += 160; // Syncopated offbeat bar hold
-      } else {
-        delay += 28;  // Fast sixteenth-note pocket
+        return Math.round(1.1 * T); // Syncopated offbeat bar hold (275ms @ 4 TPS)
       }
-      return delay;
+      return Math.round(0.48 * T);   // Crisp sixteenth-note pocket (120ms @ 4 TPS)
     }
   },
   {
     id: 'suspense',
     name: 'The Suspenseful Storyteller',
-    burstCap: 4,
-    computeDelay: (token, ctx) => {
-      let delay = ctx.pendingPauseMs || 0;
-      ctx.pendingPauseMs = 0;
-
+    computeDelay: (token, ctx, T) => {
       const text = token.text;
-      if (/[.!?]/.test(text)) {
-        delay += 25;
-        ctx.pendingPauseMs = 850; // Deep suspenseful breath-holding silence
-        return delay;
-      } else if (/[,:\-—]/.test(text)) {
-        delay += 25;
-        ctx.pendingPauseMs = 450; // Dramatic tension across clauses and dashes
-        return delay;
+      if (/[.!?]$/.test(text)) {
+        return Math.round(2.8 * T); // Deep suspenseful breath-holding silence (700ms @ 4 TPS)
       }
-
+      if (/[,:\-—]/.test(text)) {
+        return Math.round(1.8 * T); // Dramatic cliffhanger tension (450ms @ 4 TPS)
+      }
       if (ctx.burstModeRemaining > 0) {
-        delay += 28;
         ctx.burstModeRemaining--;
-      } else {
-        if (/(sudden|crack|darkness|moved|snapped|breath|knocks|shadow)/i.test(text)) {
-          ctx.burstModeRemaining = 5;
-          delay += 30; // Sudden burst initiation
-        } else {
-          delay += 140; // Creeping, cautious pacing
-        }
+        return Math.round(0.4 * T); // Sudden narrative rush (100ms @ 4 TPS)
       }
-      return delay;
+      if (/(sudden|crack|darkness|moved|snapped|breath|knocks|shadow)/i.test(text)) {
+        ctx.burstModeRemaining = 5;
+        return Math.round(0.45 * T); // Burst initiation (112ms @ 4 TPS)
+      }
+      return Math.round(1.15 * T);   // Creeping, cautious pacing (288ms @ 4 TPS)
     }
   }
 ];
@@ -643,7 +615,6 @@ class StreamInstance {
     this.id = config.id;
     this.name = config.name;
     this.isBaseline = !!config.isBaseline;
-    this.burstCap = config.burstCap || 8;
     this.computeDelayFn = config.computeDelay;
     
     // DOM Elements
@@ -655,6 +626,7 @@ class StreamInstance {
     this.isRunning = false;
     this.isPaused = false;
     this.isFinished = false;
+    this.isTelemetryLocked = false;
     
     // High-res timing
     this.nextEmitTime = 0;
@@ -666,7 +638,6 @@ class StreamInstance {
     // Internal cadence context
     this.ctx = {
       tokenIndex: 0,
-      wordsSincePause: 0,
       burstModeRemaining: 0
     };
   }
@@ -679,8 +650,6 @@ class StreamInstance {
 
   reset() {
     this.currentIndex = 0;
-    this.burstStartIndex = 0;
-    this.burstEndIndex = 0;
     this.isRunning = false;
     this.isPaused = false;
     this.isFinished = false;
@@ -692,9 +661,7 @@ class StreamInstance {
     this.totalPausedDuration = 0;
     this.ctx = {
       tokenIndex: 0,
-      wordsSincePause: 0,
-      burstModeRemaining: 0,
-      pendingPauseMs: 0
+      burstModeRemaining: 0
     };
 
     // Reset DOM
@@ -719,42 +686,13 @@ class StreamInstance {
     }
   }
 
-  getNextBurstEndIndex(startIndex) {
-    let endIndex = startIndex;
-    let cap = this.burstCap || 8;
-    if (this.id === 'suspense' && this.ctx.burstModeRemaining > 0) {
-      cap = 7;
-    }
-    if (typeof this.targetTPS === 'number' && this.targetTPS <= 2) {
-      cap = Math.min(cap, 4);
-    }
-
-    while (endIndex < this.tokens.length) {
-      const tok = this.tokens[endIndex];
-      endIndex++;
-      // Natural clause boundary at punctuation or breath-group limit
-      if (tok.isPunctuation || (endIndex - startIndex) >= cap) {
-        break;
-      }
-    }
-    // Bug B Fix: Absorb immediate trailing punctuation so it doesn't become an orphan pulse
-    if (endIndex < this.tokens.length && this.tokens[endIndex].isPunctuation) {
-      endIndex++;
-    }
-    return endIndex;
-  }
-
   start(now, targetTPS) {
     this.reset();
     this.isRunning = true;
     this.startTime = now;
     this.setTargetRate(targetTPS);
     this.scheduleNext(now);
-    if (this.isBaseline) {
-      this.els.status.textContent = 'Streaming...';
-    } else {
-      this.els.status.textContent = 'Buffering...';
-    }
+    this.els.status.textContent = 'Streaming...';
   }
 
   pause(now) {
@@ -789,54 +727,38 @@ class StreamInstance {
       return;
     }
 
+    const baseInterval = (typeof this.targetTPS === 'number') ? (1000 / this.targetTPS) : 28.5;
+
     if (this.isBaseline) {
       if (this.currentIndex === 0) {
         this.nextEmitTime = now;
       } else {
-        const delay = this.baselineTokenDelay || 250;
-        this.nextEmitTime = now + delay;
+        this.nextEmitTime = now + (this.baselineTokenDelay || baseInterval);
       }
       this.els.status.textContent = 'Streaming...';
       return;
     }
 
-    // Cadenced stream: the burst happens when it is ready!
-    if (this.currentIndex >= this.burstEndIndex) {
-      this.burstStartIndex = this.currentIndex;
-      this.burstEndIndex = this.getNextBurstEndIndex(this.currentIndex);
+    // Cadenced stream: token-by-token continuous playout
+    const token = this.tokens[this.currentIndex];
 
-      const lastTokenInBurst = this.burstEndIndex - 1;
-      const arrivalInterval = typeof this.targetTPS === 'number' ? (1000 / this.targetTPS) : 28.5;
-      const burstReadyTime = this.startTime + this.totalPausedDuration + (lastTokenInBurst * arrivalInterval);
-
-      const pendingPause = this.ctx.pendingPauseMs || 0;
-      this.ctx.pendingPauseMs = 0;
-
-      const burstStartTime = Math.max(burstReadyTime, now + pendingPause);
-      this.nextEmitTime = burstStartTime;
-
-      // Bug A Fix: Evaluate first token of burst so context state, word counters, and triggers execute!
-      const firstToken = this.tokens[this.currentIndex];
-      if (this.computeDelayFn) {
-        this.computeDelayFn(firstToken, this.ctx);
-      }
-
-      if (now < burstStartTime) {
-        this.els.status.textContent = this.currentIndex === 0 ? 'Buffering...' : 'Pausing...';
-      } else {
-        this.els.status.textContent = 'Streaming...';
-      }
+    // Initial lead time: 3.5 tokens (~875ms at 4 TPS) so opening sentence flows smoothly without starvation
+    if (this.currentIndex === 0) {
+      const initialLead = Math.round(3.5 * baseInterval);
+      this.nextEmitTime = this.startTime + initialLead;
+      this.els.status.textContent = 'Streaming...';
       return;
     }
 
-    // Inside active burst: emit using native profile delay!
-    const token = this.tokens[this.currentIndex];
-    let delay = 20;
+    let delay = baseInterval;
     if (this.computeDelayFn) {
-      delay = this.computeDelayFn(token, this.ctx);
+      delay = this.computeDelayFn(token, this.ctx, baseInterval);
     }
 
-    this.nextEmitTime = now + Math.max(4, delay);
+    const scheduledTime = now + Math.max(10, delay);
+    const earliestArrival = this.startTime + this.totalPausedDuration + (this.currentIndex * baseInterval);
+
+    this.nextEmitTime = Math.max(scheduledTime, earliestArrival);
     this.els.status.textContent = 'Streaming...';
   }
 

@@ -14,11 +14,11 @@ All cadences operate under a strict causal arrival floor ($d_i \ge a_i$) against
 
 | Profile | Rhythm & Linguistic Dynamics | Perceptual Character |
 | :--- | :--- | :--- |
-| **Baseline (Constant)** | Flat, metronomic emission directly on server arrival (`1000 / targetTPS` ms). | Robotic conveyor belt; feels slowest to the eye. |
-| **The Contemplative Philosopher** | Broad phrase horizon (cap: 10 tokens). Measured stately tempo (`75ms`), lexical deliberation on conceptual words (`125ms`), followed by deep contemplative silences (`700ms` at periods, `380ms` at clauses). | Deeply thoughtful, cerebral, deliberate. |
-| **The Conversationalist** | Short, bite-sized phrasing (cap: 5 tokens). Elastic conversational gliding (`32ms–48ms`) with stochastic mid-sentence thinking hesitations (`+90ms`). | Relaxed, spontaneous, warm, human. |
-| **The Syncopated Flow** | Locked into strict 4-token musical bars. Crisp sixteenth-note pocket (`28ms`) slamming into an offbeat bar hold (`160ms`), with musical rests at periods (`340ms`). | Rhythmic, musical, tight, energetic. |
-| **The Suspenseful Storyteller** | Asymmetric phrasing (cap: 4 tokens). Creeping, cautious drip (`140ms`) exploding into rapid narrative rushes (`28ms`) upon action triggers, broken by breathless cliffhanger silences (`850ms`). | Gripping, atmospheric, dramatic. |
+| **Baseline (Constant)** | Flat, metronomic emission directly on server arrival (`1.0 × T`). | Robotic conveyor belt; feels slowest to the eye. |
+| **The Contemplative Philosopher** | Connective syllable glide (`0.55 × T`), deliberate weight on multisyllabic words (`1.3 × T`), clause breath (`1.6 × T`), deep contemplative reflection at sentence end (`2.5 × T`). | Deeply thoughtful, cerebral, deliberate. |
+| **The Conversationalist** | Breezy latching on short words (`0.45 × T`), natural conversational flow (`0.8 × T`), subtle thinking hesitation (`+0.35 × T`), casual sentence pause (`1.8 × T`). | Relaxed, spontaneous, warm, human. |
+| **The Syncopated Flow** | Locked into 4-beat measures. Crisp sixteenth-note pocket (`0.48 × T`) slamming into an offbeat downbeat hold (`1.1 × T`), with musical rest at bar end (`1.8 × T`). | Rhythmic, musical, tight, energetic. |
+| **The Suspenseful Storyteller** | Creeping, cautious drip (`1.15 × T`) accelerating into sudden narrative rushes (`0.4 × T`) on action verbs, broken by dramatic cliffhangers (`1.8 × T`) and deep breath-holding silences (`2.8 × T`). | Gripping, atmospheric, dramatic. |
 
 ---
 
