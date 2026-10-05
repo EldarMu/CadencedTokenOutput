@@ -18,7 +18,7 @@ All cadences operate under a strict causal arrival floor ($d_i \ge a_i$) against
 | **The Contemplative Philosopher** | Connective syllable glide (`0.55 × T`), deliberate weight on multisyllabic words (`1.3 × T`), clause breath (`1.6 × T`), deep contemplative reflection at sentence end (`2.5 × T`). | Deeply thoughtful, cerebral, deliberate. |
 | **The Conversationalist** | Breezy latching on short words (`0.45 × T`), natural conversational flow (`0.8 × T`), subtle thinking hesitation (`+0.35 × T`), casual sentence pause (`1.8 × T`). | Relaxed, spontaneous, warm, human. |
 | **The Syncopated Flow** | Locked into 4-beat measures. Crisp sixteenth-note pocket (`0.48 × T`) slamming into an offbeat downbeat hold (`1.1 × T`), with musical rest at bar end (`1.8 × T`). | Rhythmic, musical, tight, energetic. |
-| **The Suspenseful Storyteller** | Creeping, cautious drip (`1.15 × T`) accelerating into sudden narrative rushes (`0.4 × T`) on action verbs, broken by dramatic cliffhangers (`1.8 × T`) and deep breath-holding silences (`2.8 × T`). | Gripping, atmospheric, dramatic. |
+| **The Suspenseful Storyteller** | High-contrast dramatic pacing. Cautious, tense creep (`0.95 × T`) surging into sudden narrative rushes (`0.45 × T`), broken by cliffhangers (`1.4 × T`) and dramatic silences (`2.0 × T`). | Gripping, atmospheric, dramatic. |
 
 ---
 

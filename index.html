@@ -571,20 +571,16 @@ const CADENCE_PROFILES = [
     computeDelay: (token, ctx, T) => {
       const text = token.text;
       if (/[.!?]$/.test(text)) {
-        return Math.round(2.8 * T); // Deep suspenseful breath-holding silence (700ms @ 4 TPS)
+        return Math.round(2.0 * T); // Dramatic silence at sentence end (500ms @ 4 TPS)
       }
       if (/[,:\-—]/.test(text)) {
-        return Math.round(1.8 * T); // Dramatic cliffhanger tension (450ms @ 4 TPS)
+        return Math.round(1.4 * T); // Cliffhanger tension across clauses and dashes (350ms @ 4 TPS)
       }
-      if (ctx.burstModeRemaining > 0) {
-        ctx.burstModeRemaining--;
-        return Math.round(0.4 * T); // Sudden narrative rush (100ms @ 4 TPS)
+      const beat = (ctx.tokenIndex % 5);
+      if (beat === 3 || beat === 4) {
+        return Math.round(0.45 * T); // Sudden narrative rush (112ms @ 4 TPS)
       }
-      if (/(sudden|crack|darkness|moved|snapped|breath|knocks|shadow)/i.test(text)) {
-        ctx.burstModeRemaining = 5;
-        return Math.round(0.45 * T); // Burst initiation (112ms @ 4 TPS)
-      }
-      return Math.round(1.15 * T);   // Creeping, cautious pacing (288ms @ 4 TPS)
+      return Math.round(0.95 * T);   // Cautious, tense pacing (238ms @ 4 TPS)
     }
   }
 ];
@@ -637,8 +633,7 @@ class StreamInstance {
     
     // Internal cadence context
     this.ctx = {
-      tokenIndex: 0,
-      burstModeRemaining: 0
+      tokenIndex: 0
     };
   }
 
@@ -660,8 +655,7 @@ class StreamInstance {
     this.pauseStartTime = 0;
     this.totalPausedDuration = 0;
     this.ctx = {
-      tokenIndex: 0,
-      burstModeRemaining: 0
+      tokenIndex: 0
     };
 
     // Reset DOM
