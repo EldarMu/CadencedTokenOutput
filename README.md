@@ -4,13 +4,13 @@
 
 > This is an experiment to see if low tokens per second can be made perceptually more pleasant.
 >
->  This approach is implemented entirely in the front-end presentation layer, no backend infra needs to be touched.
+> This approach is implemented entirely in the front-end presentation layer; no backend infra needs to be touched.
 
 ---
 
 ## Cadence Profiles
 
-All cadences are calibrated against a shared **Target Average Rate** (defaulting to 4 TPS), ensuring all streams finish in the exact same elapsed time while exhibiting wildly different perceptual dynamics:
+All cadences operate under a strict causal arrival floor ($d_i \ge a_i$) against a shared **Target Average Rate** (defaulting to 4 TPS). Punctuation and syntactic pauses naturally build a token buffer that fuels subsequent conversational bursts—running 100% causally in real time with zero artificial lookahead:
 
 | Profile | Rhythm & Linguistic Dynamics | Perceptual Character |
 | :--- | :--- | :--- |

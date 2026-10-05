@@ -707,37 +707,12 @@ class StreamInstance {
 
   calibrate(targetTPS) {
     this.targetTPS = targetTPS;
-    if (!this.tokens || this.tokens.length === 0) return;
-
     if (this.isBaseline) {
       if (typeof targetTPS === 'number') {
         this.baselineTokenDelay = 1000 / targetTPS;
       } else {
         this.baselineTokenDelay = 28.5; // Dynamic (~35 tps)
       }
-      this.rateScale = 1.0;
-      return;
-    }
-
-    if (typeof targetTPS === 'number' && this.computeDelayFn) {
-      // Simulate delays across tokens to calculate total raw time
-      const simCtx = { tokenIndex: 0, wordsSincePause: 0, burstModeRemaining: 0, pendingPauseMs: 0 };
-      let rawTotalMs = 0;
-      for (let i = 0; i < this.tokens.length; i++) {
-        const d = this.computeDelayFn(this.tokens[i], simCtx);
-        simCtx.tokenIndex++;
-        if (this.tokens[i].isPunctuation) {
-          simCtx.wordsSincePause = 0;
-        } else {
-          simCtx.wordsSincePause++;
-        }
-        rawTotalMs += d;
-      }
-      // Target total duration = (tokens.length / targetTPS) * 1000 ms
-      const targetTotalMs = (this.tokens.length / targetTPS) * 1000;
-      this.rateScale = targetTotalMs / Math.max(1, rawTotalMs);
-    } else {
-      this.rateScale = 1.0;
     }
   }
 
@@ -789,12 +764,16 @@ class StreamInstance {
       delay = this.baselineTokenDelay || 250;
     } else if (this.computeDelayFn) {
       delay = this.computeDelayFn(token, this.ctx);
-      if (this.rateScale) {
-        delay = delay * this.rateScale;
-      }
     }
 
-    this.nextEmitTime = now + Math.max(4, delay);
+    // Natural cadence scheduled time
+    const scheduledTime = now + Math.max(4, delay);
+
+    // Causal constraint: A token cannot display before it hypothetically arrives from the server
+    const arrivalInterval = typeof this.targetTPS === 'number' ? (1000 / this.targetTPS) : 28.5;
+    const earliestArrival = this.startTime + this.totalPausedDuration + (this.currentIndex * arrivalInterval);
+
+    this.nextEmitTime = Math.max(scheduledTime, earliestArrival);
   }
 
   tick(now) {
